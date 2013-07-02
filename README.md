@@ -2,6 +2,7 @@ glacier-vault-remove
 ======================
 
 This tool can help you remove an Amazon Glacier vault, even if it is not empty.
+
 It will remove all archives contained inside the vault, and then remove the vault itself.
 
 This requires boto, you can install it like this :
