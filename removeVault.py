@@ -43,7 +43,10 @@ if job.status_code == 'Succeeded':
 		print 'Remove archive ID : '+ archive['ArchiveId']
 		vault.delete_archive(archive['ArchiveId'])
 
-	print 'Vault removed !'
+	print 'Removing vault...'
+	vault.remove()
+
+	print 'Vault removed.'
 
 else:
-	print 'Vault retrieval failed...'
+	print 'Vault retrieval failed.'
