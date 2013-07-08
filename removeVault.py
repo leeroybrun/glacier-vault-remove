@@ -8,8 +8,6 @@ import time
 import os.path
 import boto.glacier
 
-jobIDfile = '/tmp/glacierRemoveJobID'
-
 # Get arguments
 regionName = sys.argv[1]
 vaultName = sys.argv[2]
@@ -26,24 +24,21 @@ glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['A
 print 'Get selected vault...'
 vault = glacier.get_vault(vaultName)
 
-if len(sys.argv) == 4:
-	print 'Get job ID from args...'
-	jobID = sys.argv[3]
-elif os.path.isfile(jobIDfile):
-	print 'Get job ID from file...'
-	f = open(jobIDfile, 'r')
-	jobID = f.read()
-	f.close()
-else:
-	print 'Initiate inventory retrieval job...'
+print 'Get jobs list...'
+jobList = vault.list_jobs()
+jobID = ''
+
+# Check if 
+for job in jobList:
+	if job.action == 'InventoryRetrieval':
+		print 'Found existing inventory retrieval job...'
+		jobID = job.id
+
+if jobID == '':
+	print 'No existing job found, initiate inventory retrieval...'
 	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
 
 print 'Job ID : '+ jobID
-
-print 'Writing job ID file...'
-f = open(jobIDfile, 'w')
-f.write(jobID)
-f.close()
 
 # Get job status
 job = vault.get_job(jobID)
@@ -57,7 +52,7 @@ while job.status_code == 'InProgress':
 
 if job.status_code == 'Succeeded':
 	print 'Inventory retrieved, parsing data...'
-	inventory = json.loads(job.get_output())
+	inventory = json.loads(job.get_output().read())
 
 	print 'Loop over archives...'
 	for archive in inventory['ArchiveList']:
