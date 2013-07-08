@@ -5,8 +5,11 @@
 import sys
 import json
 import time
+import os.path
 import boto.glacier
 from __future__ import print_function
+
+jobIDfile = '/tmp/glacierRemoveJobID'
 
 # Get arguments
 regionName = sys.argv[1]
@@ -23,14 +26,20 @@ print 'Get selected vault...'
 vault = glacier.get_vault(vaultName)
 
 if len(sys.argv) == 4:
+	print 'Get job ID from args...'
 	jobID = sys.argv[3]
+elif os.path.isfile(jobIDfile):
+	print 'Get job ID from file...'
+	jobFile = open(jobIDfile, 'r')
+	jobID = jobFile.read()
+	jobFile.close()
 else:
 	print 'Initiate inventory retrieval job...'
 	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
 
 print 'Job ID : '+ jobID
 
-print(jobID, file='/tmp/glacierRemoveJobID')
+print(jobID, file=jobIDfile)
 
 # Get job status
 job = vault.get_job(jobID)
