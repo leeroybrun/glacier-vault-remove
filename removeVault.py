@@ -6,6 +6,7 @@ import sys
 import json
 import time
 import boto.glacier
+from __future__ import print_function
 
 # Get arguments
 regionName = sys.argv[1]
@@ -28,6 +29,8 @@ else:
 	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
 
 print 'Job ID : '+ jobID
+
+print(jobID, file='/tmp/glacierRemoveJobID')
 
 # Get job status
 job = vault.get_job(jobID)
