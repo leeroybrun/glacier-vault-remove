@@ -45,8 +45,6 @@ f = open(jobIDfile, 'w')
 f.write(jobID)
 f.close()
 
-print(jobID, file=jobIDfile)
-
 # Get job status
 job = vault.get_job(jobID)
 
