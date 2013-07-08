@@ -21,8 +21,13 @@ glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['A
 print 'Get selected vault...'
 vault = glacier.get_vault(vaultName)
 
-print 'Initiate inventory retrieval job...'
-jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
+if sys.argv[3] == '':
+	print 'Initiate inventory retrieval job...'
+	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
+else:
+	jobID = sys.argv[3]
+
+print 'Job ID : '+ jobID
 
 # Get job status
 job = vault.get_job(jobID)
