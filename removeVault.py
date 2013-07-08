@@ -30,9 +30,7 @@ if len(sys.argv) == 4:
 	jobID = sys.argv[3]
 elif os.path.isfile(jobIDfile):
 	print 'Get job ID from file...'
-	jobFile = open(jobIDfile, 'r')
-	jobID = jobFile.read()
-	jobFile.close()
+	jobID = open(jobIDfile).read()
 else:
 	print 'Initiate inventory retrieval job...'
 	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
