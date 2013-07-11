@@ -58,7 +58,10 @@ if job.status_code == 'Succeeded':
 	for archive in inventory['ArchiveList']:
 		if archive['ArchiveId'] != '':
 			print 'Remove archive ID : '+ archive['ArchiveId']
-			vault.delete_archive(archive['ArchiveId'])
+			try:
+				vault.delete_archive(archive['ArchiveId'])
+			except:
+				print 'Error : ', sys.exc_info()[0]
 
 	print 'Removing vault...'
 	vault.remove()
