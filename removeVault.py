@@ -63,6 +63,12 @@ if job.status_code == 'Succeeded':
 			except:
 				print 'Error : ', sys.exc_info()[0]
 
+				print 'Sleep 30 mins before retrying...'
+				time.sleep(60*30)
+
+				print 'Retry to remove archive ID again : '+ archive['ArchiveId']
+				vault.delete_archive(archive['ArchiveId'])
+
 	print 'Removing vault...'
 	vault.remove()
 
