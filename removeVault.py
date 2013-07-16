@@ -17,14 +17,21 @@ f = open('credentials.json', 'r')
 config = json.loads(f.read())
 f.close()
 
-print 'Connect to Amazon Glacier...'
+try:
+	print 'Connecting to Amazon Glacier...'
+	glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['AWSAccessKeyId'], aws_secret_access_key=config['AWSSecretKey'])
+except:
+	print 'Error : ', sys.exc_info()[0]
+	sys.exit()
 
-glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['AWSAccessKeyId'], aws_secret_access_key=config['AWSSecretKey'])
+try:
+	print 'Getting selected vault...'
+	vault = glacier.get_vault(vaultName)
+except:
+	print 'Error : ', sys.exc_info()[0]
+	sys.exit()
 
-print 'Get selected vault...'
-vault = glacier.get_vault(vaultName)
-
-print 'Get jobs list...'
+print 'Getting jobs list...'
 jobList = vault.list_jobs()
 jobID = ''
 
