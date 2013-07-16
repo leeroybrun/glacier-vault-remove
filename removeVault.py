@@ -60,6 +60,8 @@ if job.status_code == 'Succeeded':
 			print 'Remove archive ID : '+ archive['ArchiveId']
 			try:
 				vault.delete_archive(archive['ArchiveId'])
+
+				time.sleep(1)
 			except:
 				print 'Error : ', sys.exc_info()[0]
 
