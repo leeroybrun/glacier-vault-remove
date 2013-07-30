@@ -5,6 +5,8 @@ This tool can help you remove an Amazon Glacier vault, even if it is not empty.
 
 It will remove all archives contained inside the vault, and then remove the vault itself.
 
+It is intended to work with vaults containing a lot of archives. I developed it because my vault contained more than 500'000 archives, and all other softwares crashed when I tried to remove all of them.
+
 This requires boto, you can install it like this :
 
 ```shell
