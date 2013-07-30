@@ -5,13 +5,17 @@ This tool can help you remove an Amazon Glacier vault, even if it is not empty.
 
 It will remove all archives contained inside the vault, and then remove the vault itself.
 
-It is intended to work with vaults containing a lot of archives. I developed it because my vault contained more than 500'000 archives, and all other softwares crashed when I tried to remove all of them.
+It is intended to work well with vaults containing a lot of archives. I developed it because my vault contained more than 500'000 archives, and all other softwares crashed when I tried to remove all of them.
 
-This requires boto, you can install it like this :
+## Install
+
+You can install the dependencies (boto) by calling the install script :
 
 ```shell
-pip install boto
+python setup.py install
 ```
+
+## Configure
 
 Then create a `credentials.json` file in the script directory :
 
@@ -21,6 +25,8 @@ Then create a `credentials.json` file in the script directory :
 	"AWSSecretKey":   "YOURSECRETKEY"
 }
 ```
+
+## Use
 
 You can then use the script like this :
 
