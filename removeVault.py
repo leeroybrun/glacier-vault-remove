@@ -77,7 +77,7 @@ if job.status_code == 'Succeeded':
 				vault.delete_archive(archive['ArchiveId'])
 
 	print 'Removing vault...'
-	vault.remove()
+	vault.delete()
 
 	print 'Vault removed.'
 
