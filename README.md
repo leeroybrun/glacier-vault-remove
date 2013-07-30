@@ -17,7 +17,7 @@ python setup.py install
 
 ## Configure
 
-Then create a `credentials.json` file in the script directory :
+Then create a `credentials.json` file in the same directory as `removeVault.py` :
 
 ```json
 {
