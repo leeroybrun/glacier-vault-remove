@@ -57,7 +57,11 @@ for job in jobList:
 
 if jobID == '':
 	logging.info('No existing job found, initiate inventory retrieval...')
-	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
+	try:
+		jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
+	except Exception, e:
+		logging.error(e)
+		sys.exit(1)
 
 logging.debug('Job ID : %s', jobID)
 
