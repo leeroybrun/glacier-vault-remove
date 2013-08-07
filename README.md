@@ -40,6 +40,16 @@ Example :
 python .\removeVault.py eu-west-1 my_vault
 ```
 
+## Debug
+
+By default, only the INFO messages will be printed to console. You can add a third argument "DEBUG" to the removeVault.py script if you want to show all messages.
+
+Example :
+
+```shell
+python .\removeVault.py eu-west-1 my_vault DEBUG
+```
+
 Licence
 ======================
 (The MIT License)
