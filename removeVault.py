@@ -6,11 +6,25 @@ import sys
 import json
 import time
 import os.path
+import logging
 import boto.glacier
 
+# Default logging config
+logging.basicConfig(format='%(message)s', level=logging.INFO)
+
 # Get arguments
-regionName = sys.argv[1]
-vaultName = sys.argv[2]
+if(len(sys.argv) >= 3):
+	regionName = sys.argv[1]
+	vaultName = sys.argv[2]
+else:
+	# If there is missing arguments, display usage example and exit
+	logging.error('Usage: %s REGION_NAME VAULT_NAME')
+	sys.exit(1)
+
+# Get custom logging level
+if(len(sys.argv) == 4):
+	logging.info('Logging level set to %s.', sys.argv[3])
+	logging.setLevel(sys.argv[3])
 
 # Load credentials
 f = open('credentials.json', 'r')
@@ -18,68 +32,68 @@ config = json.loads(f.read())
 f.close()
 
 try:
-	print 'Connecting to Amazon Glacier...'
+	logging.info('Connecting to Amazon Glacier...')
 	glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['AWSAccessKeyId'], aws_secret_access_key=config['AWSSecretKey'])
 except:
-	print 'Error : ', sys.exc_info()[0]
-	sys.exit()
+	logging.error('Error : %s', sys.exc_info()[0])
+	sys.exit(1)
 
 try:
-	print 'Getting selected vault...'
+	logging.info('Getting selected vault...')
 	vault = glacier.get_vault(vaultName)
 except:
-	print 'Error : ', sys.exc_info()[0]
-	sys.exit()
+	logging.error('Error : %s', sys.exc_info()[0])
+	sys.exit(1)
 
-print 'Getting jobs list...'
+logging.info('Getting jobs list...')
 jobList = vault.list_jobs()
 jobID = ''
 
-# Check if 
+# Check if a job already exists
 for job in jobList:
 	if job.action == 'InventoryRetrieval':
-		print 'Found existing inventory retrieval job...'
+		logging.info('Found existing inventory retrieval job...')
 		jobID = job.id
 
 if jobID == '':
-	print 'No existing job found, initiate inventory retrieval...'
+	logging.info('No existing job found, initiate inventory retrieval...')
 	jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
 
-print 'Job ID : '+ jobID
+logging.debug('Job ID : %s', jobID)
 
 # Get job status
 job = vault.get_job(jobID)
 
 while job.status_code == 'InProgress':
-	print 'Inventory not ready, sleep for 30 mins...'
+	logging.info('Inventory not ready, sleep for 30 mins...')
 
 	time.sleep(60*30)
 
 	job = vault.get_job(jobID)
 
 if job.status_code == 'Succeeded':
-	print 'Inventory retrieved, parsing data...'
+	logging.info('Inventory retrieved, parsing data...')
 	inventory = json.loads(job.get_output().read())
 
-	print 'Loop over archives...'
+	logging.info('Removing archives... please be patient, this may take some time...');
 	for archive in inventory['ArchiveList']:
 		if archive['ArchiveId'] != '':
-			print 'Remove archive ID : '+ archive['ArchiveId']
+			logging.debug('Remove archive ID : %s', archive['ArchiveId'])
 			try:
 				vault.delete_archive(archive['ArchiveId'])
 			except:
-				print 'Error : ', sys.exc_info()[0]
+				logging.error('Error : %s', sys.exc_info()[0])
 
-				print 'Sleep 2 mins before retrying...'
+				logging.info('Sleep 2 mins before retrying...')
 				time.sleep(60*2)
 
-				print 'Retry to remove archive ID again : '+ archive['ArchiveId']
+				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
 				vault.delete_archive(archive['ArchiveId'])
 
-	print 'Removing vault...'
+	logging.info('Removing vault...')
 	vault.delete()
 
-	print 'Vault removed.'
+	logging.info('Vault removed.')
 
 else:
-	print 'Vault retrieval failed.'
+	logging.info('Vault retrieval failed.')
