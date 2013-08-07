@@ -10,10 +10,10 @@ import logging
 import boto.glacier
 
 # Default logging config
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
 
 # Get arguments
-if(len(sys.argv) >= 3):
+if len(sys.argv) >= 3:
 	regionName = sys.argv[1]
 	vaultName = sys.argv[2]
 else:
@@ -22,9 +22,9 @@ else:
 	sys.exit(1)
 
 # Get custom logging level
-if(len(sys.argv) == 4):
-	logging.info('Logging level set to %s.', sys.argv[3])
-	logging.setLevel(sys.argv[3])
+if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
+	logging.info('Logging level set to DEBUG.')
+	logging.basicConfig(level=logging.DEBUG)
 
 # Load credentials
 f = open('credentials.json', 'r')
@@ -35,14 +35,14 @@ try:
 	logging.info('Connecting to Amazon Glacier...')
 	glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['AWSAccessKeyId'], aws_secret_access_key=config['AWSSecretKey'])
 except:
-	logging.error('Error : %s', sys.exc_info()[0])
+	logging.error(sys.exc_info()[0])
 	sys.exit(1)
 
 try:
 	logging.info('Getting selected vault...')
 	vault = glacier.get_vault(vaultName)
 except:
-	logging.error('Error : %s', sys.exc_info()[0])
+	logging.error(sys.exc_info()[0])
 	sys.exit(1)
 
 logging.info('Getting jobs list...')
@@ -82,7 +82,7 @@ if job.status_code == 'Succeeded':
 			try:
 				vault.delete_archive(archive['ArchiveId'])
 			except:
-				logging.error('Error : %s', sys.exc_info()[0])
+				logging.error(sys.exc_info()[0])
 
 				logging.info('Sleep 2 mins before retrying...')
 				time.sleep(60*2)
