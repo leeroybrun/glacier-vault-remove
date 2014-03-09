@@ -77,6 +77,7 @@ while job.status_code == 'InProgress':
 
 if job.status_code == 'Succeeded':
 	logging.info('Inventory retrieved, parsing data...')
+	print vars(job.get_output().read())
 	inventory = json.loads(job.get_output().read())
 
 	logging.info('Removing archives... please be patient, this may take some time...');
