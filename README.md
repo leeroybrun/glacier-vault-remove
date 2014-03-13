@@ -50,10 +50,6 @@ Example :
 python .\removeVault.py eu-west-1 my_vault DEBUG
 ```
 
-## Todo
-
-- Vault removal don't work immediatly sometimes, maybe wait a little after the archives removal and/or display a message to let the user know he need to wait.
-
 Licence
 ======================
 (The MIT License)
