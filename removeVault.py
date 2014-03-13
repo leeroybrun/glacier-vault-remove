@@ -8,6 +8,7 @@ import time
 import os.path
 import logging
 import boto.glacier
+from socket import gethostbyname, gaierror
 
 # Default logging config
 logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
@@ -85,8 +86,8 @@ if job.status_code == 'Succeeded':
 			logging.debug('Remove archive ID : %s', archive['ArchiveId'])
 			try:
 				vault.delete_archive(archive['ArchiveId'])
-			except:
-				logging.error(sys.exc_info()[0])
+			except Exception, e:
+				logging.error(e)
 
 				logging.info('Sleep 2 mins before retrying...')
 				time.sleep(60*2)
