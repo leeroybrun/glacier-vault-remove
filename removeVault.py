@@ -95,9 +95,11 @@ if job.status_code == 'Succeeded':
 				vault.delete_archive(archive['ArchiveId'])
 
 	logging.info('Removing vault...')
-	vault.delete()
-
-	logging.info('Vault removed.')
+	try:
+		vault.delete()
+		logging.info('Vault removed.')
+	except:
+		logging.error("We can't remove the vault now. Please wait some time and try again. You can also remove it from the AWS console, now that all archives have been removed.")
 
 else:
 	logging.info('Vault retrieval failed.')
