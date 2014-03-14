@@ -93,7 +93,11 @@ if job.status_code == 'Succeeded':
 				time.sleep(60*2)
 
 				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
-				vault.delete_archive(archive['ArchiveId'])
+				try:
+					vault.delete_archive(archive['ArchiveId'])
+					logging.info('Successfully removed archive ID : %s', archive['ArchiveId'])
+				except:
+					logging.error('Cannot remove archive ID : %s', archive['ArchiveId'])
 
 	logging.info('Removing vault...')
 	try:
