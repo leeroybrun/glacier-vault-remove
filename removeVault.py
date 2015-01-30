@@ -19,7 +19,7 @@ if len(sys.argv) >= 3:
 	vaultName = sys.argv[2]
 else:
 	# If there is missing arguments, display usage example and exit
-	logging.error('Usage: %s REGION_NAME VAULT_NAME', sys.argv[0])
+	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG]', sys.argv[0])
 	sys.exit(1)
 
 # Get custom logging level
@@ -38,6 +38,17 @@ try:
 except:
 	logging.error(sys.exc_info()[0])
 	sys.exit(1)
+
+if vaultName == 'LIST':
+    try:
+        logging.info('Getting list of vaults...')
+        vaults = glacier.list_vaults()
+    except:
+        logging.error(sys.exc_info()[0])
+        sys.exit(1)
+    for vault in vaults:
+        logging.info(vault.name)
+    exit(0)
 
 try:
 	logging.info('Getting selected vault...')
