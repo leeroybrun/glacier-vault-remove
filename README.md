@@ -31,13 +31,21 @@ Then create a `credentials.json` file in the same directory as `removeVault.py` 
 You can then use the script like this :
 
 ```shell
-python .\removeVault.py REGION-NAME VAULT-NAME
+python .\removeVault.py <region-name> [<vault-name>|LIST] [DEBUG]
 ```
 
 Example :
 
 ```shell
 python .\removeVault.py eu-west-1 my_vault
+```
+
+## List
+
+If you don't know the vault name, you can generate a list like this:
+
+```shell
+python .\removeVault.py eu-west-1 LIST
 ```
 
 ## Debug
