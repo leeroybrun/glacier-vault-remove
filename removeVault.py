@@ -89,7 +89,7 @@ while job.status_code == 'InProgress':
 
 if job.status_code == 'Succeeded':
 	logging.info('Inventory retrieved, parsing data...')
-	inventory = json.loads(job.get_output().read())
+	inventory = json.loads(job.get_output().read().decode('utf-8'))
 
 	logging.info('Removing archives... please be patient, this may take some time...');
 	for archive in inventory['ArchiveList']:
