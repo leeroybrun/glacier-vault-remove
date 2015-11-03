@@ -71,7 +71,7 @@ if jobID == '':
 	logging.info('No existing job found, initiate inventory retrieval...')
 	try:
 		jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
-	except Exception, e:
+	except Exception as e:
 		logging.error(e)
 		sys.exit(1)
 
@@ -97,7 +97,7 @@ if job.status_code == 'Succeeded':
 			logging.debug('Remove archive ID : %s', archive['ArchiveId'])
 			try:
 				vault.delete_archive(archive['ArchiveId'])
-			except Exception, e:
+			except Exception as e:
 				logging.error(e)
 
 				logging.info('Sleep 2 mins before retrying...')
