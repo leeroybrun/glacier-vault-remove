@@ -22,7 +22,7 @@ if len(sys.argv) >= 3:
 	regionName = sys.argv[1]
 	vaultName = sys.argv[2]
 else:
-	# If there is missing arguments, display usage example and exit
+	# If there are missing arguments, display usage example and exit
 	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG]', sys.argv[0])
 	sys.exit(1)
 
@@ -127,7 +127,7 @@ if job.status_code == 'Succeeded':
 		logging.info('Vault removed.')
 	except:
 		printException()
-		logging.error("We can't remove the vault now. Please wait some time and try again. You can also remove it from the AWS console, now that all archives have been removed.")
+		logging.error('We can’t remove the vault now. Please wait some time and try again. You can also remove it from the AWS console, now that all archives have been removed.')
 
 else:
 	logging.info('Vault retrieval failed.')
