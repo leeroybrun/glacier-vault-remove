@@ -15,7 +15,7 @@ def printException():
 	logging.error('Exception "%s" occured with message "%s"', exc_type.__name__, exc_value)
 
 # Default logging config
-logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(levelname)s : %(message)s', level=logging.INFO, datefmt='%H:%M:%S')
 
 # Get arguments
 if len(sys.argv) >= 3:
