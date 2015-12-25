@@ -86,7 +86,7 @@ if jobID == '':
 		printException()
 		sys.exit(1)
 
-logging.debug('Job ID : %s', jobID)
+logging.info('Job ID : %s', jobID)
 
 # Get job status
 job = vault.get_job(jobID)
@@ -102,17 +102,19 @@ if job.status_code == 'Succeeded':
 	logging.info('Inventory retrieved, parsing data...')
 	inventory = json.loads(job.get_output().read().decode('utf-8'))
 
-	logging.info('Removing archives... please be patient, this may take some time...');
-	for archive in inventory['ArchiveList']:
+	archiveList = inventory['ArchiveList']
+
+	logging.info('Removing %s archives... please be patient, this may take some time...', len(archiveList));
+	for index, archive in enumerate(archiveList):
 		if archive['ArchiveId'] != '':
-			logging.debug('Remove archive ID : %s', archive['ArchiveId'])
+			logging.info('Remove archive number %s of %s, ID : %s', index, len(archiveList), archive['ArchiveId'])
 			try:
 				vault.delete_archive(archive['ArchiveId'])
 			except:
 				printException()
 
-				logging.info('Sleep 2 mins before retrying...')
-				time.sleep(60*2)
+				logging.info('Sleep 2s before retrying...')
+				time.sleep(2)
 
 				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
 				try:
