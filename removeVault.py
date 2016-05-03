@@ -29,7 +29,7 @@ else:
 # Get custom logging level
 if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
 	logging.info('Logging level set to DEBUG.')
-	logging.basicConfig(level=logging.DEBUG)
+	logging.getLogger().setLevel(logging.DEBUG)
 
 # Load credentials
 try:
