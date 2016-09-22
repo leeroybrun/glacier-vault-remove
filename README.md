@@ -65,7 +65,7 @@ If you don't want to install all dependencies locally you can also build and use
 Step 1) make sure you have docker installed and run
 
 ```
-docker build -t glacier-remove-vault .
+docker build -t glacier-vault-remove .
 ```
 
 Step 2) Create a credentials.json as described above
