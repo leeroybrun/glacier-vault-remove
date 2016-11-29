@@ -1,14 +1,40 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 
 # -*- coding: UTF-8 -*-
 
 import sys
 import json
 import time
-import os.path
+import os
 import logging
 import boto.glacier
+from multiprocessing import Process
 from socket import gethostbyname, gaierror
+
+def split_list(alist, wanted_parts=1):
+	length = len(alist)
+	return [ alist[i*length // wanted_parts: (i+1)*length // wanted_parts] 
+		for i in range(wanted_parts) ]
+
+def process_archive(archive_list):
+	logging.info('Starting work on %s items', len(archive_list))
+	for index, archive in enumerate(archive_list):
+		if archive['ArchiveId'] != '':
+			logging.info('%s Remove archive number %s of %s, ID : %s', os.getpid(), index, len(archive_list), archive['ArchiveId'])
+			try:
+				vault.delete_archive(archive['ArchiveId'])
+			except:
+				printException()
+
+				logging.info('Sleep 2s before retrying...')
+				time.sleep(2)
+
+				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
+				try:
+					vault.delete_archive(archive['ArchiveId'])
+					logging.info('Successfully removed archive ID : %s', archive['ArchiveId'])
+				except:
+					logging.error('Cannot remove archive ID : %s', archive['ArchiveId'])
 
 def printException():
 	exc_type, exc_value = sys.exc_info()[:2]
@@ -23,13 +49,23 @@ if len(sys.argv) >= 3:
 	vaultName = sys.argv[2]
 else:
 	# If there are missing arguments, display usage example and exit
-	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG]', sys.argv[0])
+	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
 	sys.exit(1)
 
 # Get custom logging level
 if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
 	logging.info('Logging level set to DEBUG.')
 	logging.getLogger().setLevel(logging.DEBUG)
+
+# Get number of processes
+numProcess = 1
+if len(sys.argv) == 4:
+	if sys.argv[3].isdigit():
+		numProcess = int(sys.argv[3])
+elif len(sys.argv) == 5:
+	if sys.argv[4].isdigit():
+		numProcess = int(sys.argv[4])
+logging.info('Running with %s processes', numProcess)
 
 # Load credentials
 try:
@@ -86,7 +122,7 @@ if jobID == '':
 		printException()
 		sys.exit(1)
 
-logging.debug('Job ID : %s', jobID)
+logging.info('Job ID : %s', jobID)
 
 # Get job status
 job = vault.get_job(jobID)
@@ -102,24 +138,19 @@ if job.status_code == 'Succeeded':
 	logging.info('Inventory retrieved, parsing data...')
 	inventory = json.loads(job.get_output().read().decode('utf-8'))
 
-	logging.info('Removing archives... please be patient, this may take some time...');
-	for archive in inventory['ArchiveList']:
-		if archive['ArchiveId'] != '':
-			logging.debug('Remove archive ID : %s', archive['ArchiveId'])
-			try:
-				vault.delete_archive(archive['ArchiveId'])
-			except:
-				printException()
+	archiveList = inventory['ArchiveList']
 
-				logging.info('Sleep 2 mins before retrying...')
-				time.sleep(60*2)
+	logging.info('Removing %s archives... please be patient, this may take some time...', len(archiveList));
+	archiveParts = split_list(archiveList, numProcess)
+	jobs = []
 
-				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
-				try:
-					vault.delete_archive(archive['ArchiveId'])
-					logging.info('Successfully removed archive ID : %s', archive['ArchiveId'])
-				except:
-					logging.error('Cannot remove archive ID : %s', archive['ArchiveId'])
+	for archive in archiveParts:
+		p = Process(target=process_archive, args=(archive,))
+		jobs.append(p)
+		p.start()
+
+	for j in jobs:
+		j.join()
 
 	logging.info('Removing vault...')
 	try:
@@ -127,7 +158,7 @@ if job.status_code == 'Succeeded':
 		logging.info('Vault removed.')
 	except:
 		printException()
-		logging.error('We can’t remove the vault now. Please wait some time and try again. You can also remove it from the AWS console, now that all archives have been removed.')
+		logging.error('We cant remove the vault now. Please wait some time and try again. You can also remove it from the AWS console, now that all archives have been removed.')
 
 else:
 	logging.info('Vault retrieval failed.')
