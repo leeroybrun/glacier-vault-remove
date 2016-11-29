@@ -31,13 +31,19 @@ Then create a `credentials.json` file in the same directory as `removeVault.py` 
 You can then use the script like this :
 
 ```shell
-python .\removeVault.py <region-name> [<vault-name>|LIST] [DEBUG]
+python .\removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUMPROCESS]
 ```
 
 Example :
 
 ```shell
 python .\removeVault.py eu-west-1 my_vault
+```
+
+Or if you want to perform the removal using multiple processes (4 processes here) :
+
+```shell
+python .\removeVault.py eu-west-1 my_vault 4
 ```
 
 ## List
