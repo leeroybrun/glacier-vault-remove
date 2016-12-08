@@ -31,7 +31,7 @@ Then create a `credentials.json` file in the same directory as `removeVault.py` 
 You can then use the script like this :
 
 ```shell
-python .\removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUMPROCESS]
+python .\removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES]
 ```
 
 Example :
@@ -79,7 +79,7 @@ Step 2) Create a credentials.json as described above
 Step 3) Run the tool in the docker container:
 
 ```
-docker run -v /path/to/credentials.json:/app/credentials.json glacier-vault-remove <region> <vault|LIST> [DEBUG]
+docker run -v /path/to/credentials.json:/app/credentials.json glacier-vault-remove <region> <vault|LIST> [DEBUG] [NUM_PROCESSES]
 ```
 
 Make sure you use the _full_ absolute path to `credentials.json`, relative paths do not work here.
@@ -96,4 +96,3 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/leeroybrun/glacier-vault-remove/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
