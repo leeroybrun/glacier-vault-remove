@@ -74,6 +74,8 @@ elif len(sys.argv) == 6:
 		numProcess = int(sys.argv[5])
 logging.info('Running with %s processes', numProcess)
 
+os.environ['AWS_DEFAULT_REGION'] = regionName
+
 # Load credentials
 try:
 	f = open('credentials.json', 'r')
