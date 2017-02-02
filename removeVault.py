@@ -35,7 +35,7 @@ def process_archive(archive_list):
 				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
 				try:
 					glacier.delete_archive(
-					    vaultName='vaultName',
+					    vaultName=vaultName,
 					    archiveId=archive['ArchiveId']
 					)
 					logging.info('Successfully removed archive ID : %s', archive['ArchiveId'])
