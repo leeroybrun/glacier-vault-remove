@@ -7,7 +7,7 @@ setup(
 
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires = ['boto>=2.9.9'],
+    install_requires = ['3>=1.4.4'],
 
     # metadata for upload to PyPI
     author = "Leeroy Brun",
