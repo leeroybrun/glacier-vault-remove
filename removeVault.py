@@ -55,7 +55,7 @@ if len(sys.argv) >= 3:
 	vaultName = sys.argv[2]
 else:
 	# If there are missing arguments, display usage example and exit
-	logging.error('Usage: %s <account_id> <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
+	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
 	sys.exit(1)
 
 # Get custom logging level
