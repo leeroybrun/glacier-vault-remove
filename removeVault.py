@@ -68,18 +68,21 @@ elif len(sys.argv) == 5:
 logging.info('Running with %s processes', numProcess)
 
 # Load credentials
+connection_kwargs = {}
 try:
 	f = open('credentials.json', 'r')
 	config = json.loads(f.read())
 	f.close()
+
+	connection_kwargs['aws_access_key_id'] = config['AWSAccessKeyId']
+	connection_kwargs['aws_secret_access_key'] = config['AWSSecretKey']
+
 except:
-	logging.error('Cannot load "credentials.json" file...')
-	printException()
-	sys.exit(1)
+	logging.error('Cannot load "credentials.json" file... Assuming Role Authentication.')
 
 try:
 	logging.info('Connecting to Amazon Glacier...')
-	glacier = boto.glacier.connect_to_region(regionName, aws_access_key_id=config['AWSAccessKeyId'], aws_secret_access_key=config['AWSSecretKey'])
+	glacier = boto.glacier.connect_to_region(regionName, **connection_kwargs)
 except:
 	printException()
 	sys.exit(1)
@@ -98,7 +101,7 @@ if vaultName == 'LIST':
 	exit(0)
 
 try:
-	logging.info('Getting selected vault...')
+	logging.info('Getting selected vault... [{v}]'.print(v=vaultName))
 	vault = glacier.get_vault(vaultName)
 except:
 	printException()
@@ -127,10 +130,13 @@ logging.info('Job ID : %s', jobID)
 # Get job status
 job = vault.get_job(jobID)
 
-while job.status_code == 'InProgress':
-	logging.info('Inventory not ready, sleep for 30 mins...')
+logging.info('Job Creation Date: {d}'.format(d=job.creation_date))
 
-	time.sleep(60*30)
+while job.status_code == 'InProgress':
+	# Job are usualy readyn within 4hours of request.
+	logging.info('Inventory not ready, sleep for 10 mins...')
+
+	time.sleep(60*10)
 
 	job = vault.get_job(jobID)
 
