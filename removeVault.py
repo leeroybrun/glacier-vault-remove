@@ -155,7 +155,7 @@ while job['StatusCode'] == 'InProgress':
 
 	time.sleep(60*10)
 
-	job = vault.describe_job(vaultName=vaultName, jobId=jobID)
+	job = glacier.describe_job(vaultName=vaultName, jobId=jobID)
 
 if job['StatusCode'] == 'Succeeded':
 	logging.info('Inventory retrieved, parsing data...')
