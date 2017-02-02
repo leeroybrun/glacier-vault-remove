@@ -50,28 +50,27 @@ def printException():
 logging.basicConfig(format='%(asctime)s - %(levelname)s : %(message)s', level=logging.INFO, datefmt='%H:%M:%S')
 
 # Get arguments
-if len(sys.argv) >= 4:
-	accountId = sys.argv[1]
-	regionName = sys.argv[2]
-	vaultName = sys.argv[3]
+if len(sys.argv) >= 3:
+	regionName = sys.argv[1]
+	vaultName = sys.argv[2]
 else:
 	# If there are missing arguments, display usage example and exit
 	logging.error('Usage: %s <account_id> <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
 	sys.exit(1)
 
 # Get custom logging level
-if len(sys.argv) == 5 and sys.argv[4] == 'DEBUG':
+if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
 	logging.info('Logging level set to DEBUG.')
 	logging.getLogger().setLevel(logging.DEBUG)
 
 # Get number of processes
 numProcess = 1
-if len(sys.argv) == 5:
+if len(sys.argv) == 4:
+	if sys.argv[3].isdigit():
+		numProcess = int(sys.argv[3])
+elif len(sys.argv) == 5:
 	if sys.argv[4].isdigit():
 		numProcess = int(sys.argv[4])
-elif len(sys.argv) == 6:
-	if sys.argv[5].isdigit():
-		numProcess = int(sys.argv[5])
 logging.info('Running with %s processes', numProcess)
 
 os.environ['AWS_DEFAULT_REGION'] = regionName
@@ -87,6 +86,11 @@ try:
 
 except:
 	logging.error('Cannot load "credentials.json" file... Assuming Role Authentication.')
+
+sts_client = boto3.client("sts")
+accountId = sts_client.get_caller_identity()["Account"]
+
+logging.info("Working on AccountID: {id}".format(id=accountId))
 
 try:
 	logging.info('Connecting to Amazon Glacier...')
