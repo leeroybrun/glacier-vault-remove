@@ -7,7 +7,7 @@ import json
 import time
 import os
 import logging
-import boto.glacier
+import boto3
 from multiprocessing import Process
 from socket import gethostbyname, gaierror
 
@@ -22,7 +22,10 @@ def process_archive(archive_list):
 		if archive['ArchiveId'] != '':
 			logging.info('%s Remove archive number %s of %s, ID : %s', os.getpid(), index, len(archive_list), archive['ArchiveId'])
 			try:
-				vault.delete_archive(archive['ArchiveId'])
+				glacier.delete_archive(
+				    vaultName=vaultName,
+				    archiveId=archive['ArchiveId']
+				)
 			except:
 				printException()
 
@@ -31,7 +34,10 @@ def process_archive(archive_list):
 
 				logging.info('Retry to remove archive ID : %s', archive['ArchiveId'])
 				try:
-					vault.delete_archive(archive['ArchiveId'])
+					glacier.delete_archive(
+					    vaultName='vaultName',
+					    archiveId=archive['ArchiveId']
+					)
 					logging.info('Successfully removed archive ID : %s', archive['ArchiveId'])
 				except:
 					logging.error('Cannot remove archive ID : %s', archive['ArchiveId'])
@@ -44,45 +50,45 @@ def printException():
 logging.basicConfig(format='%(asctime)s - %(levelname)s : %(message)s', level=logging.INFO, datefmt='%H:%M:%S')
 
 # Get arguments
-if len(sys.argv) >= 3:
-	regionName = sys.argv[1]
-	vaultName = sys.argv[2]
+if len(sys.argv) >= 4:
+	accountId = sys.argv[1]
+	regionName = sys.argv[2]
+	vaultName = sys.argv[3]
 else:
 	# If there are missing arguments, display usage example and exit
-	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
+	logging.error('Usage: %s <account_id> <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
 	sys.exit(1)
 
 # Get custom logging level
-if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
+if len(sys.argv) == 5 and sys.argv[4] == 'DEBUG':
 	logging.info('Logging level set to DEBUG.')
 	logging.getLogger().setLevel(logging.DEBUG)
 
 # Get number of processes
 numProcess = 1
-if len(sys.argv) == 4:
-	if sys.argv[3].isdigit():
-		numProcess = int(sys.argv[3])
-elif len(sys.argv) == 5:
+if len(sys.argv) == 5:
 	if sys.argv[4].isdigit():
 		numProcess = int(sys.argv[4])
+elif len(sys.argv) == 6:
+	if sys.argv[5].isdigit():
+		numProcess = int(sys.argv[5])
 logging.info('Running with %s processes', numProcess)
 
 # Load credentials
-connection_kwargs = {}
 try:
 	f = open('credentials.json', 'r')
 	config = json.loads(f.read())
 	f.close()
 
-	connection_kwargs['aws_access_key_id'] = config['AWSAccessKeyId']
-	connection_kwargs['aws_secret_access_key'] = config['AWSSecretKey']
+ 	os.environ['AWS_ACCESS_KEY_ID'] = config['AWSAccessKeyId']
+	os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWSSecretKey']
 
 except:
 	logging.error('Cannot load "credentials.json" file... Assuming Role Authentication.')
 
 try:
 	logging.info('Connecting to Amazon Glacier...')
-	glacier = boto.glacier.connect_to_region(regionName, **connection_kwargs)
+	glacier = boto3.client('glacier')
 except:
 	printException()
 	sys.exit(1)
@@ -90,37 +96,41 @@ except:
 if vaultName == 'LIST':
 	try:
 		logging.info('Getting list of vaults...')
-		vaults = glacier.list_vaults()
+		response = glacier.list_vaults()
 	except:
 		printException()
 		sys.exit(1)
 
-	for vault in vaults:
-		logging.info(vault.name)
+	for vault in response['VaultList']:
+		logging.info(vault['VaultName'])
 
 	exit(0)
 
 try:
-	logging.info('Getting selected vault... [{v}]'.print(v=vaultName))
-	vault = glacier.get_vault(vaultName)
+	logging.info('Getting selected vault... [{v}]'.format(v=vaultName))
+	vault = glacier.describe_vault(vaultName=vaultName)
+	logging.info("Working on ARN {arn}".format(arn=vault['VaultARN']))
 except:
 	printException()
 	sys.exit(1)
 
 logging.info('Getting jobs list...')
-jobList = vault.list_jobs()
+response = glacier.list_jobs(vaultName=vaultName)
 jobID = ''
 
 # Check if a job already exists
-for job in jobList:
-	if job.action == 'InventoryRetrieval':
+for job in response['JobList']:
+	if job['Action'] == 'InventoryRetrieval':
 		logging.info('Found existing inventory retrieval job...')
-		jobID = job.id
+		jobID = job['JobId']
 
 if jobID == '':
 	logging.info('No existing job found, initiate inventory retrieval...')
 	try:
-		jobID = vault.retrieve_inventory(description='Python Amazon Glacier Removal Tool')
+		vault = glacier.Vault(accountId, vaultName)
+		job = vault.initiate_inventory_retrieval()
+
+		jobID = job.id
 	except:
 		printException()
 		sys.exit(1)
@@ -128,21 +138,26 @@ if jobID == '':
 logging.info('Job ID : %s', jobID)
 
 # Get job status
-job = vault.get_job(jobID)
+job = glacier.describe_job(vaultName=vaultName, jobId=jobID)
 
-logging.info('Job Creation Date: {d}'.format(d=job.creation_date))
+logging.info('Job Creation Date: {d}'.format(d=job['CreationDate']))
 
-while job.status_code == 'InProgress':
-	# Job are usualy readyn within 4hours of request.
+while job['StatusCode'] == 'InProgress':
+	# Job are usualy ready within 4hours of request.
 	logging.info('Inventory not ready, sleep for 10 mins...')
 
 	time.sleep(60*10)
 
-	job = vault.get_job(jobID)
+	job = vault.describe_job(vaultName=vaultName, jobId=jobID)
 
-if job.status_code == 'Succeeded':
+if job['StatusCode'] == 'Succeeded':
+	logging.info('Retrieving inventory')
+	job_output = glacier.get_job_output(
+	    vaultName=vaultName,
+	    jobId=job['JobId']
+	)
 	logging.info('Inventory retrieved, parsing data...')
-	inventory = json.loads(job.get_output().read().decode('utf-8'))
+	inventory = json.loads(job_output['body'].read().decode('utf-8'))
 
 	archiveList = inventory['ArchiveList']
 
@@ -160,7 +175,9 @@ if job.status_code == 'Succeeded':
 
 	logging.info('Removing vault...')
 	try:
-		vault.delete()
+		glacier.delete_vault(
+		    vaultName=vaultName
+		)
 		logging.info('Vault removed.')
 	except:
 		printException()
