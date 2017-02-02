@@ -133,7 +133,8 @@ for job in response['JobList']:
 if jobID == '':
 	logging.info('No existing job found, initiate inventory retrieval...')
 	try:
-		vault = glacier.Vault(accountId, vaultName)
+		glacier_resource = boto3.resource('glacier')
+		vault = glacier_resource.Vault(accountId, vaultName)
 		job = vault.initiate_inventory_retrieval()
 
 		jobID = job.id
