@@ -9,7 +9,7 @@ It is intended to work well with vaults containing a lot of archives. I develope
 
 ## Install
 
-You can install the dependencies (boto) by calling the install script :
+You can install the dependencies (boto3) by calling the install script :
 
 ```shell
 python setup.py install
