@@ -81,7 +81,7 @@ try:
 	config = json.loads(f.read())
 	f.close()
 
- 	os.environ['AWS_ACCESS_KEY_ID'] = config['AWSAccessKeyId']
+	os.environ['AWS_ACCESS_KEY_ID'] = config['AWSAccessKeyId']
 	os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWSSecretKey']
 
 except:
