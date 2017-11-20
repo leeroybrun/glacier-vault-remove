@@ -157,7 +157,7 @@ while job['StatusCode'] == 'InProgress':
 
 	job = glacier.describe_job(vaultName=vaultName, jobId=jobID)
 
-if job['StatusCode'] == 'Succeeded':
+if job['StatusCode'] == 'Succeeded' and __name__ == '__main__':
 	logging.info('Inventory retrieved, parsing data...')
 	job_output = glacier.get_job_output(vaultName=vaultName, jobId=job['JobId'])
 	inventory = json.loads(job_output['body'].read().decode('utf-8'))
