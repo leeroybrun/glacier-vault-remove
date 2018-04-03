@@ -31,19 +31,19 @@ Then create a `credentials.json` file in the same directory as `removeVault.py` 
 You can then use the script like this :
 
 ```shell
-python .\removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES]
+python removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES]
 ```
 
 Example :
 
 ```shell
-python .\removeVault.py eu-west-1 my_vault
+python removeVault.py eu-west-1 my_vault
 ```
 
 Or if you want to perform the removal using multiple processes (4 processes here) :
 
 ```shell
-python .\removeVault.py eu-west-1 my_vault 4
+python removeVault.py eu-west-1 my_vault 4
 ```
 
 ## List
@@ -51,7 +51,7 @@ python .\removeVault.py eu-west-1 my_vault 4
 If you don't know the vault name, you can generate a list like this:
 
 ```shell
-python .\removeVault.py eu-west-1 LIST
+python removeVault.py eu-west-1 LIST
 ```
 
 ## Debug
@@ -61,7 +61,7 @@ By default, only the INFO messages will be printed to console. You can add a thi
 Example :
 
 ```shell
-python .\removeVault.py eu-west-1 my_vault DEBUG
+python removeVault.py eu-west-1 my_vault DEBUG
 ```
 
 ## Running the Docker container
