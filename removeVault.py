@@ -103,11 +103,15 @@ if vaultName == 'LIST':
 	try:
 		logging.info('Getting list of vaults...')
 		response = glacier.list_vaults()
+		vault_list = response.get('VaultList')
+		while response.get('Marker') is not None:
+			response = glacier.list_vaults(marker=response['Marker'])
+			vault_list += response.get('VaultList')
 	except:
 		printException()
 		sys.exit(1)
 
-	for vault in response['VaultList']:
+	for vault in vault_list:
 		logging.info(vault['VaultName'])
 
 	exit(0)
