@@ -11,7 +11,7 @@ It is intended to work well with vaults containing a lot of archives. I develope
 
 ### Docker
 
-If you have docker installed, you can easily run the script using the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/repository/docker/leeroyb/glacier-vault-remove) image available on Docker Hub:
+If you have docker installed, you can easily run the script using the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/r/leeroyb/glacier-vault-remove) image available on Docker Hub:
 
 ```
 docker run -v /ABSOLUTE_LOCAL_PATH_TO/credentials.json:/app/credentials.json -D leeroyb/glacier-vault-remove <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
@@ -104,7 +104,7 @@ python removeVault.py <region-name> <vault-name> DEBUG
 
 ## Building the Docker image
 
-If for whatever reason you don't want to use the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/repository/docker/leeroyb/glacier-vault-remove) image on Docker Hub, you can also build the image yourself from this repository.
+If for whatever reason you don't want to use the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/r/leeroyb/glacier-vault-remove) image on Docker Hub, you can also build the image yourself from this repository.
 
 1. Make sure you have docker installed
 2. Clone or download this repository
