@@ -94,18 +94,18 @@ python removeVault.py <region-name> <vault-name> DEBUG
 
 If you don't want to install all dependencies locally you can also build and use the Docker container supplied with this package.
 
-Step 1) make sure you have docker installed and run
+1. Make sure you have docker installed and run:
 
 ```
 docker build -t glacier-vault-remove .
 ```
 
-Step 2) Create a credentials.json as described above
+2. Create a `credentials.json` as described above
 
-Step 3) Run the tool in the docker container:
+3. Run the tool in the docker container:
 
 ```
-docker run -v /path/to/credentials.json:/app/credentials.json glacier-vault-remove <region> <vault|LIST> [DEBUG] [NUM_PROCESSES]
+docker run -v /path/to/credentials.json:/app/credentials.json glacier-vault-remove <region> <vault|LIST> [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
 ```
 
 Make sure you use the _full_ absolute path to `credentials.json`, relative paths do not work here.
