@@ -31,7 +31,7 @@ Then create a `credentials.json` file in the same directory as `removeVault.py` 
 You can then use the script like this :
 
 ```shell
-python removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES]
+python removeVault.py <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
 ```
 
 Example :
@@ -40,28 +40,54 @@ Example :
 python removeVault.py eu-west-1 my_vault
 ```
 
-Or if you want to perform the removal using multiple processes (4 processes here) :
+### Multiple processes
+
+If you want to perform the removal using multiple processes (4 processes here) :
 
 ```shell
-python removeVault.py eu-west-1 my_vault 4
+python removeVault.py <region-name> <vault-name> 4
 ```
 
-## List
+### List vaults
 
 If you don't know the vault name, you can generate a list like this:
 
 ```shell
-python removeVault.py eu-west-1 LIST
+python removeVault.py <region-name> LIST
 ```
 
-## Debug
+### Inventory retrieval jobs
+
+A vault inventory is necessary to remove all the archives inside of it.
+By default, we will look for an existing inventory and use it.
+If there is none, we will initiate a new one.
+
+You can change this behavior using the `job_id` argument, with the following values:
+- `LATEST` (default): use the latest inventory available, or initiate a new one if there is none
+- `NEW`: force initiating a new inventory retrieval job
+- `LIST`: list the inventory retrieval jobs availables
+- `<job_id>`: give a specific job ID to use
+
+For example to force a new inventory:
+
+```shell
+python removeVault.py <region-name> <vault-name> NEW
+```
+
+If you want to use 4 processes to remove the archives AND force a new inventory:
+
+```shell
+python removeVault.py <region-name> <vault-name> 4 NEW
+```
+
+### Debug
 
 By default, only the INFO messages will be printed to console. You can add a third argument "DEBUG" to the removeVault.py script if you want to show all messages.
 
 Example :
 
 ```shell
-python removeVault.py eu-west-1 my_vault DEBUG
+python removeVault.py <region-name> <vault-name> DEBUG
 ```
 
 ## Running the Docker container

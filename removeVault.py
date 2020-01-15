@@ -46,6 +46,19 @@ def printException():
 	exc_type, exc_value = sys.exc_info()[:2]
 	logging.error('Exception "%s" occured with message "%s"', exc_type.__name__, exc_value)
 
+def get_jobs(vaultName):
+	try:
+		response = glacier.list_jobs(vaultName=vaultName)
+		jobs_list = response.get('JobList')
+		while response.get('Marker') is not None:
+			response = glacier.list_jobs(vaultName=vaultName, marker=response['Marker'])
+			jobs_list += response.get('JobList')
+
+		return jobs_list
+	except:
+		printException()
+		return []
+
 # Default logging config
 logging.basicConfig(format='%(asctime)s - %(levelname)s : %(message)s', level=logging.INFO, datefmt='%H:%M:%S')
 
@@ -53,25 +66,35 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s : %(message)s', level=lo
 if len(sys.argv) >= 3:
 	regionName = sys.argv[1]
 	vaultName = sys.argv[2]
+	numProcess = 1
+	retrievalJob = 'LATEST'
 else:
 	# If there are missing arguments, display usage example and exit
-	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS]', sys.argv[0])
+	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS] [<job_id>|LIST|NEW|LATEST]', sys.argv[0])
 	sys.exit(1)
 
-# Get custom logging level
-if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
-	logging.info('Logging level set to DEBUG.')
-	logging.getLogger().setLevel(logging.DEBUG)
-
-# Get number of processes
-numProcess = 1
-if len(sys.argv) == 4:
-	if sys.argv[3].isdigit():
+# 3rd argument - log level, num process or job ID
+if len(sys.argv) >= 4:
+	if sys.argv[3] == 'DEBUG':
+		logging.info('Logging level set to DEBUG.')
+		logging.getLogger().setLevel(logging.DEBUG)
+	elif sys.argv[3].isdigit():
 		numProcess = int(sys.argv[3])
-elif len(sys.argv) == 5:
+	else:
+		retrievalJob = sys.argv[3]
+
+# 4th argument - num process or job ID
+if len(sys.argv) >= 5:
 	if sys.argv[4].isdigit():
 		numProcess = int(sys.argv[4])
+	else:
+		retrievalJob = sys.argv[4]
+
 logging.info('Running with %s processes', numProcess)
+
+# 5th argument - job ID
+if len(sys.argv) >= 6:
+	retrievalJob = sys.argv[5]
 
 os.environ['AWS_DEFAULT_REGION'] = regionName
 
@@ -116,6 +139,16 @@ if vaultName == 'LIST':
 
 	exit(0)
 
+if retrievalJob == 'LIST':
+	logging.info('Getting list of inventory retrieval jobs...')
+	jobs_list = get_jobs(vaultName)
+
+	for job in jobs_list:
+		if job['Action'] == 'InventoryRetrieval':
+			logging.info("{id} - {date} - {status}".format(id=job['JobId'], date=job['CreationDate'], status=job['StatusCode']))
+
+	exit(0)
+
 try:
 	logging.info('Getting selected vault... [{v}]'.format(v=vaultName))
 	vault = glacier.describe_vault(vaultName=vaultName)
@@ -124,32 +157,37 @@ except:
 	printException()
 	sys.exit(1)
 
-logging.info('Getting jobs list...')
-response = glacier.list_jobs(vaultName=vaultName)
-jobID = ''
+if retrievalJob == 'LATEST':
+	logging.info('Looking for the latest inventory retrieval job...')
+	jobs_list = get_jobs(vaultName) # Reversed to get the latest, not the first
+	retrievalJob = ''
 
-# Check if a job already exists
-for job in response['JobList']:
-	if job['Action'] == 'InventoryRetrieval':
-		logging.info('Found existing inventory retrieval job...')
-		jobID = job['JobId']
+	# Check if a job already exists
+	for job in jobs_list:
+		if job['Action'] == 'InventoryRetrieval':
+			logging.info('Found existing job...')
+			retrievalJob = job['JobId']
+			break
+	
+	if retrievalJob == '':
+		logging.info('No existing job found...')
 
-if jobID == '':
-	logging.info('No existing job found, initiate inventory retrieval...')
+if retrievalJob == '' or retrievalJob == 'NEW':
+	logging.info('Initiate inventory retrieval...')
 	try:
 		glacier_resource = boto3.resource('glacier')
 		vault = glacier_resource.Vault(accountId, vaultName)
 		job = vault.initiate_inventory_retrieval()
 
-		jobID = job.id
+		retrievalJob = job.id
 	except:
 		printException()
 		sys.exit(1)
 
-logging.info('Job ID : %s', jobID)
+logging.info('Job ID : %s', retrievalJob)
 
 # Get job status
-job = glacier.describe_job(vaultName=vaultName, jobId=jobID)
+job = glacier.describe_job(vaultName=vaultName, jobId=retrievalJob)
 
 logging.info('Job Creation Date: {d}'.format(d=job['CreationDate']))
 
@@ -159,7 +197,7 @@ while job['StatusCode'] == 'InProgress':
 
 	time.sleep(60*10)
 
-	job = glacier.describe_job(vaultName=vaultName, jobId=jobID)
+	job = glacier.describe_job(vaultName=vaultName, jobId=retrievalJob)
 
 if job['StatusCode'] == 'Succeeded' and __name__ == '__main__':
 	logging.info('Inventory retrieved, parsing data...')
