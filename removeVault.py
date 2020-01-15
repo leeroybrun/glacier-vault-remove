@@ -66,29 +66,34 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s : %(message)s', level=lo
 if len(sys.argv) >= 3:
 	regionName = sys.argv[1]
 	vaultName = sys.argv[2]
+	numProcess = 1
+	retrievalJob = 'LATEST'
 else:
 	# If there are missing arguments, display usage example and exit
 	logging.error('Usage: %s <region_name> [<vault_name>|LIST] [DEBUG] [NUMPROCESS] [<job_id>|LIST|NEW|LATEST]', sys.argv[0])
 	sys.exit(1)
 
-# Get custom logging level
-if len(sys.argv) == 4 and sys.argv[3] == 'DEBUG':
-	logging.info('Logging level set to DEBUG.')
-	logging.getLogger().setLevel(logging.DEBUG)
-
-# Get number of processes
-numProcess = 1
-if len(sys.argv) == 4:
-	if sys.argv[3].isdigit():
+# 3rd argument - log level, num process or job ID
+if len(sys.argv) >= 4:
+	if sys.argv[3] == 'DEBUG':
+		logging.info('Logging level set to DEBUG.')
+		logging.getLogger().setLevel(logging.DEBUG)
+	elif sys.argv[3].isdigit():
 		numProcess = int(sys.argv[3])
-elif len(sys.argv) == 5:
+	else:
+		retrievalJob = sys.argv[3]
+
+# 4th argument - num process or job ID
+if len(sys.argv) >= 5:
 	if sys.argv[4].isdigit():
 		numProcess = int(sys.argv[4])
+	else:
+		retrievalJob = sys.argv[4]
+
 logging.info('Running with %s processes', numProcess)
 
-# Get inventory retrieval job
-retrievalJob = 'LATEST'
-if len(sys.argv) == 6:
+# 5th argument - job ID
+if len(sys.argv) >= 6:
 	retrievalJob = sys.argv[5]
 
 os.environ['AWS_DEFAULT_REGION'] = regionName
@@ -140,7 +145,7 @@ if retrievalJob == 'LIST':
 
 	for job in jobs_list:
 		if job['Action'] == 'InventoryRetrieval':
-			logging.info("{id} - {date} - {status}".format(id=job['JobId'], date=job['CreationDate'], status=job['StatusMessage']))
+			logging.info("{id} - {date} - {status}".format(id=job['JobId'], date=job['CreationDate'], status=job['StatusCode']))
 
 	exit(0)
 
@@ -154,7 +159,7 @@ except:
 
 if retrievalJob == 'LATEST':
 	logging.info('Looking for the latest inventory retrieval job...')
-	jobs_list = reversed(get_jobs(vaultName)) # Reversed to get the latest, not the first
+	jobs_list = get_jobs(vaultName) # Reversed to get the latest, not the first
 	retrievalJob = ''
 
 	# Check if a job already exists
@@ -162,6 +167,7 @@ if retrievalJob == 'LATEST':
 		if job['Action'] == 'InventoryRetrieval':
 			logging.info('Found existing job...')
 			retrievalJob = job['JobId']
+			break
 	
 	if retrievalJob == '':
 		logging.info('No existing job found...')
