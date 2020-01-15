@@ -9,7 +9,19 @@ It is intended to work well with vaults containing a lot of archives. I develope
 
 ## Install
 
-You can install the dependencies (boto3) by calling the install script :
+### Docker
+
+If you have docker installed, you can easily run the script using the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/repository/docker/leeroyb/glacier-vault-remove) image available on Docker Hub:
+
+```
+docker run -v /ABSOLUTE_LOCAL_PATH_TO/credentials.json:/app/credentials.json -D leeroyb/glacier-vault-remove <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
+```
+
+Make sure you use the _full_ absolute path to `credentials.json` (see below), relative paths do not work here.
+
+### Without Docker
+
+You can clone or [download this repository](https://github.com/leeroybrun/glacier-vault-remove/archive/master.zip) and install the dependencies (boto3) by calling the install script :
 
 ```shell
 python setup.py install
@@ -17,7 +29,7 @@ python setup.py install
 
 ## Configure
 
-Then create a `credentials.json` file in the same directory as `removeVault.py` :
+Then create a `credentials.json` file in the same directory as `removeVault.py` (or anywhere on your filesystem if using Docker) :
 
 ```json
 {
@@ -90,19 +102,21 @@ Example :
 python removeVault.py <region-name> <vault-name> DEBUG
 ```
 
-## Running the Docker container
+## Building the Docker image
 
-If you don't want to install all dependencies locally you can also build and use the Docker container supplied with this package.
+If for whatever reason you don't want to use the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/repository/docker/leeroyb/glacier-vault-remove) image on Docker Hub, you can also build the image yourself from this repository.
 
-1. Make sure you have docker installed and run:
+1. Make sure you have docker installed
+2. Clone or download this repository
+3. Build the image:
 
 ```
 docker build -t glacier-vault-remove .
 ```
 
-2. Create a `credentials.json` as described above
+4. Create a `credentials.json` as described above
 
-3. Run the tool in the docker container:
+5. Run the tool in the docker container:
 
 ```
 docker run -v /path/to/credentials.json:/app/credentials.json glacier-vault-remove <region> <vault|LIST> [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
