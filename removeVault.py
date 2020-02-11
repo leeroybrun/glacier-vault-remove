@@ -20,7 +20,7 @@ def process_archive(archive_list):
 	logging.info('Starting work on %s items', len(archive_list))
 	for index, archive in enumerate(archive_list):
 		if archive['ArchiveId'] != '':
-			logging.info('%s Remove archive number %s of %s, ID : %s', os.getpid(), index, len(archive_list), archive['ArchiveId'])
+			logging.info('%s Remove archive number %s of %s, ID : %s', os.getpid(), index + 1, len(archive_list), archive['ArchiveId'])
 			try:
 				glacier.delete_archive(
 				    vaultName=vaultName,
