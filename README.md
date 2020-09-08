@@ -14,7 +14,7 @@ It is intended to work well with vaults containing a lot of archives. I develope
 If you have docker installed, you can easily run the script using the [`leeroyb/glacier-vault-remove`](https://hub.docker.com/r/leeroyb/glacier-vault-remove) image available on Docker Hub:
 
 ```
-docker run -v /ABSOLUTE_LOCAL_PATH_TO/credentials.json:/app/credentials.json -D leeroyb/glacier-vault-remove <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
+docker run -v /ABSOLUTE_LOCAL_PATH_TO/credentials.json:/app/credentials.json -d leeroyb/glacier-vault-remove <region-name> [<vault-name>|LIST] [DEBUG] [NUM_PROCESSES] [<job_id>|LIST|NEW|LATEST]
 ```
 
 Make sure you use the _full_ absolute path to `credentials.json` (see below), relative paths do not work here.
